@@ -1,8 +1,8 @@
+import { CompressionMethod } from "@actions/cache/lib/internal/constants";
 import { exec } from "@actions/exec";
 import * as io from "@actions/io";
-import * as path from "path";
 import { writeFileSync } from "fs";
-import { CompressionMethod } from "@actions/cache/lib/internal/constants";
+import * as path from "path";
 
 const ManifestFilename = "manifest.txt";
 const CacheFilenameZstd = "cache.tzst";
