@@ -44,6 +44,8 @@ export async function restoreImpl(
         );
         const failOnCacheMiss = utils.getInputAsBool(Inputs.FailOnCacheMiss);
         const lookupOnly = utils.getInputAsBool(Inputs.LookupOnly);
+        const compressionLevel =
+            utils.getInputAsInt(Inputs.CompressionLevel) ?? 0;
 
         let cacheKey: string | undefined;
 
@@ -55,7 +57,9 @@ export async function restoreImpl(
                 cachePaths,
                 primaryKey,
                 restoreKeys,
-                { lookupOnly: lookupOnly }
+                { lookupOnly: lookupOnly },
+                undefined,
+                compressionLevel
             );
         } else {
             cacheKey = await cache.restoreCache(

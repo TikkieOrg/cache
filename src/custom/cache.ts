@@ -1,15 +1,13 @@
 // https://github.com/actions/toolkit/blob/%40actions/cache%403.2.2/packages/cache/src/cache.ts
 
+import * as utils from "@actions/cache/lib/internal/cacheUtils";
+import { listTar } from "@actions/cache/lib/internal/tar";
+import { DownloadOptions, UploadOptions } from "@actions/cache/lib/options";
 import * as core from "@actions/core";
 import * as path from "path";
-import * as utils from "@actions/cache/lib/internal/cacheUtils";
+
 import * as cacheHttpClient from "./backend";
-import {
-    createTar,
-    extractTar,
-    listTar
-} from "@actions/cache/lib/internal/tar";
-import { DownloadOptions, UploadOptions } from "@actions/cache/lib/options";
+import { createTar, extractTar } from "./tar";
 
 export class ValidationError extends Error {
     constructor(message: string) {
@@ -82,7 +80,8 @@ export async function restoreCache(
     primaryKey: string,
     restoreKeys?: string[],
     options?: DownloadOptions,
-    enableCrossOsArchive = false
+    enableCrossOsArchive = false,
+    compressionLevel = 0
 ): Promise<string | undefined> {
     checkPaths(paths);
 
@@ -152,7 +151,6 @@ export async function restoreCache(
 
         await extractTar(archivePath, compressionMethod);
         core.info("Cache restored successfully");
-
         return cacheEntry.cacheKey;
     } catch (error) {
         const typedError = error as Error;
@@ -192,7 +190,8 @@ export async function saveCache(
     paths: string[],
     key: string,
     options?: UploadOptions,
-    enableCrossOsArchive = false
+    enableCrossOsArchive = false,
+    compressionLevel = 0
 ): Promise<number> {
     checkPaths(paths);
     checkKey(key);
@@ -219,7 +218,12 @@ export async function saveCache(
     core.debug(`Archive Path: ${archivePath}`);
 
     try {
-        await createTar(archiveFolder, cachePaths, compressionMethod);
+        await createTar(
+            archiveFolder,
+            cachePaths,
+            compressionMethod,
+            compressionLevel
+        );
         if (core.isDebug()) {
             await listTar(archivePath, compressionMethod);
         }

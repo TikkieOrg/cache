@@ -15,6 +15,10 @@ inputs:
     description: 'An optional boolean when enabled, allows windows runners to save caches that can be restored on other platforms'
     default: 'false'
     required: false
+  compression-level:
+    description: 'zstd --fast compression level (1-22). Lower values decompress faster at the cost of a larger archive. 0 (default) uses zstd default level.'
+    default: '0'
+    required: false
 runs:
   using: 'node24'
   main: '../dist/save-only/index.js'

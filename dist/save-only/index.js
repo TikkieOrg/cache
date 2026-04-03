@@ -100439,7 +100439,8 @@ var Inputs;
     Inputs["UploadChunkSize"] = "upload-chunk-size";
     Inputs["EnableCrossOsArchive"] = "enableCrossOsArchive";
     Inputs["FailOnCacheMiss"] = "fail-on-cache-miss";
-    Inputs["LookupOnly"] = "lookup-only"; // Input for cache, restore action
+    Inputs["LookupOnly"] = "lookup-only";
+    Inputs["CompressionLevel"] = "compression-level"; // Input for cache, restore, save action (zstd --fast level, 1-22; 0 = default)
 })(Inputs = exports.Inputs || (exports.Inputs = {}));
 var Outputs;
 (function (Outputs) {
@@ -100724,6 +100725,7 @@ const path = __importStar(__nccwpck_require__(6928));
 const utils = __importStar(__nccwpck_require__(8299));
 const cacheHttpClient = __importStar(__nccwpck_require__(5951));
 const tar_1 = __nccwpck_require__(5321);
+const tar_2 = __nccwpck_require__(5352);
 class ValidationError extends Error {
     constructor(message) {
         super(message);
@@ -100781,7 +100783,7 @@ exports.isFeatureAvailable = isFeatureAvailable;
  * @param enableCrossOsArchive an optional boolean enabled to restore on windows any cache created on any platform
  * @returns string returns the key for the cache hit, otherwise returns undefined
  */
-function restoreCache(paths, primaryKey, restoreKeys, options, enableCrossOsArchive = false) {
+function restoreCache(paths, primaryKey, restoreKeys, options, enableCrossOsArchive = false, compressionLevel = 0) {
     return __awaiter(this, void 0, void 0, function* () {
         checkPaths(paths);
         restoreKeys = restoreKeys || [];
@@ -100823,7 +100825,7 @@ function restoreCache(paths, primaryKey, restoreKeys, options, enableCrossOsArch
             if (archiveFileSize === 0) {
                 throw new DownloadValidationError("Downloaded cache archive is empty (0 bytes). This may indicate a failed download or corrupted cache.");
             }
-            yield (0, tar_1.extractTar)(archivePath, compressionMethod);
+            yield (0, tar_2.extractTar)(archivePath, compressionMethod);
             core.info("Cache restored successfully");
             return cacheEntry.cacheKey;
         }
@@ -100863,7 +100865,7 @@ exports.restoreCache = restoreCache;
  * @param options cache upload options
  * @returns number returns cacheId if the cache was saved successfully and throws an error if save fails
  */
-function saveCache(paths, key, options, enableCrossOsArchive = false) {
+function saveCache(paths, key, options, enableCrossOsArchive = false, compressionLevel = 0) {
     return __awaiter(this, void 0, void 0, function* () {
         checkPaths(paths);
         checkKey(key);
@@ -100879,7 +100881,7 @@ function saveCache(paths, key, options, enableCrossOsArchive = false) {
         const archivePath = path.join(archiveFolder, utils.getCacheFileName(compressionMethod));
         core.debug(`Archive Path: ${archivePath}`);
         try {
-            yield (0, tar_1.createTar)(archiveFolder, cachePaths, compressionMethod);
+            yield (0, tar_2.createTar)(archiveFolder, cachePaths, compressionMethod, compressionLevel);
             if (core.isDebug()) {
                 yield (0, tar_1.listTar)(archivePath, compressionMethod);
             }
@@ -101207,6 +101209,120 @@ const promiseWithTimeout = (timeoutMs, promise) => __awaiter(void 0, void 0, voi
 
 /***/ }),
 
+/***/ 5352:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.createTar = exports.extractTar = void 0;
+const exec_1 = __nccwpck_require__(5236);
+const io = __importStar(__nccwpck_require__(4994));
+const path = __importStar(__nccwpck_require__(6928));
+const fs_1 = __nccwpck_require__(9896);
+const constants_1 = __nccwpck_require__(8287);
+const ManifestFilename = "manifest.txt";
+const CacheFilenameZstd = "cache.tzst";
+const CacheFilenameGzip = "cache.tgz";
+function getWorkingDirectory() {
+    var _a;
+    return (_a = process.env["GITHUB_WORKSPACE"]) !== null && _a !== void 0 ? _a : process.cwd();
+}
+function getCacheFileName(compressionMethod) {
+    return compressionMethod === constants_1.CompressionMethod.Gzip
+        ? CacheFilenameGzip
+        : CacheFilenameZstd;
+}
+function buildDecompressProgram(compressionMethod) {
+    switch (compressionMethod) {
+        case constants_1.CompressionMethod.Zstd:
+            return "zstd -d -T0 --long=30";
+        case constants_1.CompressionMethod.ZstdWithoutLong:
+            return "zstd -d -T0";
+        default:
+            return null;
+    }
+}
+function buildCompressProgram(compressionMethod, compressionLevel) {
+    const levelFlag = compressionLevel > 0 ? ` --fast=${compressionLevel}` : "";
+    switch (compressionMethod) {
+        case constants_1.CompressionMethod.Zstd:
+            return `zstd -T0${levelFlag} --long=30`;
+        case constants_1.CompressionMethod.ZstdWithoutLong:
+            return `zstd -T0${levelFlag}`;
+        default:
+            return null;
+    }
+}
+function extractTar(archivePath, compressionMethod) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const workingDirectory = getWorkingDirectory();
+        yield io.mkdirP(workingDirectory);
+        const tarPath = yield io.which("tar", true);
+        const decompressProgram = buildDecompressProgram(compressionMethod);
+        if (decompressProgram === null) {
+            yield (0, exec_1.exec)(`"${tarPath}" -xzf "${archivePath}" -P -C "${workingDirectory}"`);
+            return;
+        }
+        yield (0, exec_1.exec)(`"${tarPath}" -xf "${archivePath}" -P -C "${workingDirectory}" --use-compress-program "${decompressProgram}"`);
+    });
+}
+exports.extractTar = extractTar;
+function createTar(archiveFolder, sourceDirectories, compressionMethod, compressionLevel = 0) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const manifestPath = path.join(archiveFolder, ManifestFilename);
+        (0, fs_1.writeFileSync)(manifestPath, sourceDirectories.join("\n"));
+        const workingDirectory = getWorkingDirectory();
+        const tarPath = yield io.which("tar", true);
+        const cacheFileName = getCacheFileName(compressionMethod);
+        const archivePath = path
+            .join(archiveFolder, cacheFileName)
+            .replace(/\\/g, "/");
+        const compressProgram = buildCompressProgram(compressionMethod, compressionLevel);
+        if (compressProgram === null) {
+            yield (0, exec_1.exec)(`"${tarPath}" --posix -czf "${archivePath}" -P -C "${workingDirectory}" --files-from "${manifestPath}"`, undefined, { cwd: archiveFolder });
+            return;
+        }
+        yield (0, exec_1.exec)(`"${tarPath}" --posix -cf "${archivePath}" -P -C "${workingDirectory}" --files-from "${manifestPath}" --use-compress-program "${compressProgram}"`, undefined, { cwd: archiveFolder });
+    });
+}
+exports.createTar = createTar;
+
+
+/***/ }),
+
 /***/ 56:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
@@ -101258,6 +101374,7 @@ const canSaveToS3 = process.env["RUNS_ON_S3_BUCKET_CACHE"] !== undefined;
 // throw an uncaught exception.  Instead of failing this action, just warn.
 process.on("uncaughtException", e => utils.logWarning(e.message));
 function saveImpl(stateProvider) {
+    var _a;
     return __awaiter(this, void 0, void 0, function* () {
         let cacheId = -1;
         try {
@@ -101287,11 +101404,12 @@ function saveImpl(stateProvider) {
                 required: true
             });
             const enableCrossOsArchive = utils.getInputAsBool(constants_1.Inputs.EnableCrossOsArchive);
+            const compressionLevel = (_a = utils.getInputAsInt(constants_1.Inputs.CompressionLevel)) !== null && _a !== void 0 ? _a : 0;
             if (canSaveToS3) {
                 core.info("The cache action detected a local S3 bucket cache. Using it.");
                 cacheId = yield custom.saveCache(cachePaths, primaryKey, {
                     uploadChunkSize: utils.getInputAsInt(constants_1.Inputs.UploadChunkSize)
-                }, enableCrossOsArchive);
+                }, enableCrossOsArchive, compressionLevel);
             }
             else {
                 cacheId = yield cache.saveCache(cachePaths, primaryKey, {
