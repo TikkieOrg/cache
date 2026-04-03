@@ -64,6 +64,8 @@ export async function saveImpl(
         const enableCrossOsArchive = utils.getInputAsBool(
             Inputs.EnableCrossOsArchive
         );
+        const compressionLevel =
+            utils.getInputAsInt(Inputs.CompressionLevel) ?? 0;
 
         if (canSaveToS3) {
             core.info(
@@ -76,7 +78,8 @@ export async function saveImpl(
                 {
                     uploadChunkSize: utils.getInputAsInt(Inputs.UploadChunkSize)
                 },
-                enableCrossOsArchive
+                enableCrossOsArchive,
+                compressionLevel
             );
         } else {
             cacheId = await cache.saveCache(
