@@ -34,6 +34,10 @@ inputs:
       save-always does not work as intended and will be removed in a future release.
       A separate `actions/cache/restore` step should be used instead.
       See https://github.com/actions/cache/tree/main/save#always-save-cache for more details.
+  compression-level:
+    description: 'zstd --fast compression level (1-22). Lower values decompress faster at the cost of a larger archive. 0 (default) uses zstd default level.'
+    default: '0'
+    required: false
 outputs:
   cache-hit:
     description: 'A boolean value to indicate an exact match was found for the primary key'

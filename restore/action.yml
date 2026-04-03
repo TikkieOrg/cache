@@ -23,6 +23,10 @@ inputs:
     description: 'Check if a cache entry exists for the given input(s) (key, restore-keys) without downloading the cache'
     default: 'false'
     required: false
+  compression-level:
+    description: 'zstd --fast compression level (1-22). Lower values decompress faster at the cost of a larger archive. 0 (default) uses zstd default level.'
+    default: '0'
+    required: false
 outputs:
   cache-hit:
     description: 'A boolean value to indicate an exact match was found for the primary key'
