@@ -100720,11 +100720,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.saveCache = exports.restoreCache = exports.isFeatureAvailable = exports.DownloadValidationError = exports.ReserveCacheError = exports.ValidationError = void 0;
+const utils = __importStar(__nccwpck_require__(8299));
+const tar_1 = __nccwpck_require__(5321);
 const core = __importStar(__nccwpck_require__(7484));
 const path = __importStar(__nccwpck_require__(6928));
-const utils = __importStar(__nccwpck_require__(8299));
 const cacheHttpClient = __importStar(__nccwpck_require__(5951));
-const tar_1 = __nccwpck_require__(5321);
 const tar_2 = __nccwpck_require__(5352);
 class ValidationError extends Error {
     constructor(message) {
@@ -101248,11 +101248,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.createTar = exports.extractTar = void 0;
+const constants_1 = __nccwpck_require__(8287);
 const exec_1 = __nccwpck_require__(5236);
 const io = __importStar(__nccwpck_require__(4994));
-const path = __importStar(__nccwpck_require__(6928));
 const fs_1 = __nccwpck_require__(9896);
-const constants_1 = __nccwpck_require__(8287);
+const path = __importStar(__nccwpck_require__(6928));
 const ManifestFilename = "manifest.txt";
 const CacheFilenameZstd = "cache.tzst";
 const CacheFilenameGzip = "cache.tgz";
@@ -101268,18 +101268,29 @@ function getCacheFileName(compressionMethod) {
 function buildDecompressProgram(compressionMethod) {
     switch (compressionMethod) {
         case constants_1.CompressionMethod.Zstd:
-            return "zstd -d -T0 --long=30";
+            return "zstd -d -T0 --long=29";
         case constants_1.CompressionMethod.ZstdWithoutLong:
             return "zstd -d -T0";
         default:
             return null;
     }
 }
+// compressionLevel:
+//   0         → zstd default (level 3)
+//   1–22      → zstd quality level N (higher = smaller archive, slower to compress)
+//   negative  → zstd --fast=|N| (faster compress, larger archive)
+function buildLevelFlag(compressionLevel) {
+    if (compressionLevel > 0)
+        return ` -${compressionLevel}`;
+    if (compressionLevel < 0)
+        return ` --fast=${-compressionLevel}`;
+    return "";
+}
 function buildCompressProgram(compressionMethod, compressionLevel) {
-    const levelFlag = compressionLevel > 0 ? ` --fast=${compressionLevel}` : "";
+    const levelFlag = buildLevelFlag(compressionLevel);
     switch (compressionMethod) {
         case constants_1.CompressionMethod.Zstd:
-            return `zstd -T0${levelFlag} --long=30`;
+            return `zstd -T0${levelFlag} --long=29`;
         case constants_1.CompressionMethod.ZstdWithoutLong:
             return `zstd -T0${levelFlag}`;
         default:
