@@ -35,7 +35,7 @@ inputs:
       A separate `actions/cache/restore` step should be used instead.
       See https://github.com/actions/cache/tree/main/save#always-save-cache for more details.
   compression-level:
-    description: 'zstd --fast compression level (1-22). Lower values decompress faster at the cost of a larger archive. 0 (default) uses zstd default level.'
+    description: 'zstd compression level. 0 (default) = zstd default (level 3). Positive values (1–22) = higher quality, smaller archive, slower to compress. Negative values = --fast mode, larger archive, faster to compress.'
     default: '0'
     required: false
 outputs:
