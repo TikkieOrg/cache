@@ -23,7 +23,7 @@ function buildDecompressProgram(
 ): string | null {
     switch (compressionMethod) {
         case CompressionMethod.Zstd:
-            return "zstd -d -T0 --long=30";
+            return "zstd -d -T0 --long=29";
         case CompressionMethod.ZstdWithoutLong:
             return "zstd -d -T0";
         default:
@@ -31,14 +31,24 @@ function buildDecompressProgram(
     }
 }
 
+// compressionLevel:
+//   0         → zstd default (level 3)
+//   1–22      → zstd quality level N (higher = smaller archive, slower to compress)
+//   negative  → zstd --fast=|N| (faster compress, larger archive)
+function buildLevelFlag(compressionLevel: number): string {
+    if (compressionLevel > 0) return ` -${compressionLevel}`;
+    if (compressionLevel < 0) return ` --fast=${-compressionLevel}`;
+    return "";
+}
+
 function buildCompressProgram(
     compressionMethod: CompressionMethod,
     compressionLevel: number
 ): string | null {
-    const levelFlag = compressionLevel > 0 ? ` --fast=${compressionLevel}` : "";
+    const levelFlag = buildLevelFlag(compressionLevel);
     switch (compressionMethod) {
         case CompressionMethod.Zstd:
-            return `zstd -T0${levelFlag} --long=30`;
+            return `zstd -T0${levelFlag} --long=29`;
         case CompressionMethod.ZstdWithoutLong:
             return `zstd -T0${levelFlag}`;
         default:
