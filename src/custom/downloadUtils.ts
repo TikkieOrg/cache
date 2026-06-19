@@ -155,7 +155,7 @@ export async function downloadCacheHttpClientConcurrent(
     archivePath: fs.PathLike,
     options: RunsOnDownloadOptions
 ): Promise<void> {
-    const archiveDescriptor = await fs.promises.open(archivePath, "w");
+    const archiveDescriptor = await fs.promises.open(archivePath, "w", 0o600);
     const httpClient = new HttpClient("actions/cache", undefined, {
         socketTimeout: options.timeoutInMs,
         keepAlive: true
