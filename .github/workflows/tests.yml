@@ -13,6 +13,9 @@ on:
       - v4*
       - v6*
 
+permissions:
+  contents: read
+
 jobs:
   # End to end save and restore
   test-save:

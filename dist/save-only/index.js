@@ -32083,7 +32083,7 @@ LazyJsonString.fromObject = LazyJsonString.from;
 
 function quoteHeader(part) {
     if (part.includes(",") || part.includes('"')) {
-        part = `"${part.replace(/"/g, '\\"')}"`;
+        part = `"${part.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
     }
     return part;
 }
@@ -74573,9 +74573,7 @@ exports.createTar = createTar;
 const exec_1 = __nccwpck_require__(95236);
 const io = __importStar(__nccwpck_require__(94994));
 const path = __importStar(__nccwpck_require__(16928));
-const fs_1 = __nccwpck_require__(79896);
 const constants_1 = __nccwpck_require__(58287);
-const ManifestFilename = "manifest.txt";
 const CacheFilenameZstd = "cache.tzst";
 const CacheFilenameGzip = "cache.tgz";
 function getWorkingDirectory() {
@@ -74632,8 +74630,6 @@ function extractTar(archivePath, compressionMethod) {
 }
 function createTar(archiveFolder_1, sourceDirectories_1, compressionMethod_1) {
     return __awaiter(this, arguments, void 0, function* (archiveFolder, sourceDirectories, compressionMethod, compressionLevel = 0) {
-        const manifestPath = path.join(archiveFolder, ManifestFilename);
-        (0, fs_1.writeFileSync)(manifestPath, sourceDirectories.join("\n"));
         const workingDirectory = getWorkingDirectory();
         const tarPath = yield io.which("tar", true);
         const cacheFileName = getCacheFileName(compressionMethod);
@@ -74642,10 +74638,16 @@ function createTar(archiveFolder_1, sourceDirectories_1, compressionMethod_1) {
             .replace(/\\/g, "/");
         const compressProgram = buildCompressProgram(compressionMethod, compressionLevel);
         if (compressProgram === null) {
-            yield (0, exec_1.exec)(`"${tarPath}" --posix -czf "${archivePath}" -P -C "${workingDirectory}" --files-from "${manifestPath}"`, undefined, { cwd: archiveFolder });
+            yield (0, exec_1.exec)(`"${tarPath}" --posix -czf "${archivePath}" -P -C "${workingDirectory}" --files-from -`, undefined, {
+                cwd: archiveFolder,
+                input: Buffer.from(sourceDirectories.join("\n"))
+            });
             return;
         }
-        yield (0, exec_1.exec)(`"${tarPath}" --posix -cf "${archivePath}" -P -C "${workingDirectory}" --files-from "${manifestPath}" --use-compress-program "${compressProgram}"`, undefined, { cwd: archiveFolder });
+        yield (0, exec_1.exec)(`"${tarPath}" --posix -cf "${archivePath}" -P -C "${workingDirectory}" --files-from - --use-compress-program "${compressProgram}"`, undefined, {
+            cwd: archiveFolder,
+            input: Buffer.from(sourceDirectories.join("\n"))
+        });
     });
 }
 
