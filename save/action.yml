@@ -16,7 +16,7 @@ inputs:
     default: 'false'
     required: false
   compression-level:
-    description: 'zstd --fast compression level (1-22). Lower values decompress faster at the cost of a larger archive. 0 (default) uses zstd default level.'
+    description: 'zstd compression level for S3 caches. 0 uses the zstd default (level 3), 1-22 trades compression speed for smaller archives, and negative values enable faster compression with larger archives.'
     default: '0'
     required: false
 runs:

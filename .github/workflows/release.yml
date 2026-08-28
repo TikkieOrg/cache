@@ -10,7 +10,7 @@ on:
       target_branch:
         description: Branch to build and release from
         required: false
-        default: v5
+        default: main
         type: string
 
 permissions:
@@ -28,7 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       TAG: ${{ inputs.tag }}
-      TARGET_BRANCH: ${{ inputs.target_branch || 'v5' }}
+      TARGET_BRANCH: ${{ inputs.target_branch || 'main' }}
       DIST_ARCHIVE: runs-on-cache-${{ inputs.tag }}.tar.gz
     steps:
       - name: Validate inputs

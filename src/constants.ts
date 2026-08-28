@@ -6,7 +6,7 @@ export enum Inputs {
     EnableCrossOsArchive = "enableCrossOsArchive", // Input for cache, restore, save action
     FailOnCacheMiss = "fail-on-cache-miss", // Input for cache, restore action
     LookupOnly = "lookup-only", // Input for cache, restore action
-    CompressionLevel = "compression-level" // Input for cache, restore, save action (zstd --fast level, 1-22; 0 = default)
+    CompressionLevel = "compression-level" // Input for cache, restore, save action
 }
 
 export enum Outputs {

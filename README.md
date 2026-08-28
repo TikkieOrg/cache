@@ -53,6 +53,10 @@ Be aware of S3 transfer costs if your runners are not in the same AWS region as 
 * `RUNS_ON_RUNNER_NAME`: when running on RunsOn, where this environment variable is non-empty, existing AWS credentials from the environment will be discarded. If you want to preserve existing environment variables, set this to the empty string `""`.
 * `RUNS_ON_S3_FORCE_PATH_STYLE` or `AWS_S3_FORCE_PATH_STYLE`: if one of those environment variables equals the string `"true"`, then the S3 client will be configured to force the path style.
 
+## TikkieOrg extension
+
+This fork retains the `compression-level` input for S3-backed caches. Use `0` for zstd's default compression level, a value from `1` through `22` for progressively smaller archives at the cost of compression speed, or a negative value for zstd's faster compression mode. This input has no effect when the action falls back to GitHub's cache service.
+
 ## Action pinning
 
 Contrary to the upstream action, `v5` is a branch that tracks the latest upstream v5 release with RunsOn patches applied. You can also pin to a specific commit.

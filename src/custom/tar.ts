@@ -31,10 +31,8 @@ function buildDecompressProgram(
     }
 }
 
-// compressionLevel:
-//   0         → zstd default (level 3)
-//   1–22      → zstd quality level N (higher = smaller archive, slower to compress)
-//   negative  → zstd --fast=|N| (faster compress, larger archive)
+// 0 uses zstd's default, positive values select a quality level, and negative
+// values select the corresponding --fast level.
 function buildLevelFlag(compressionLevel: number): string {
     if (compressionLevel > 0) return ` -${compressionLevel}`;
     if (compressionLevel < 0) return ` --fast=${-compressionLevel}`;

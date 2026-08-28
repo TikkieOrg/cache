@@ -8,6 +8,7 @@ import nock from "nock";
 import * as cacheHttpClient from "../src/custom/backend";
 import { restoreCache } from "../src/custom/cache";
 import { downloadCacheHttpClientConcurrent } from "../src/custom/downloadUtils";
+import * as customTar from "../src/custom/tar";
 
 // Mock the core module
 jest.mock("@actions/core");
@@ -182,7 +183,7 @@ describe("Download Validation", () => {
             );
 
             // Mock tar operations
-            jest.spyOn(tar, "extractTar").mockResolvedValue(undefined);
+            jest.spyOn(customTar, "extractTar").mockResolvedValue(undefined);
             jest.spyOn(tar, "listTar").mockResolvedValue(undefined);
 
             const result = await restoreCache(["/test/path"], "test-key");
