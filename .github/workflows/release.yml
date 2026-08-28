@@ -4,13 +4,13 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: Release tag to create, for example v5.0.6
+        description: Release tag to create, for example v6.0.0
         required: true
         type: string
       target_branch:
         description: Branch to build and release from
         required: false
-        default: main
+        default: v6
         type: string
 
 permissions:
@@ -28,7 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       TAG: ${{ inputs.tag }}
-      TARGET_BRANCH: ${{ inputs.target_branch || 'main' }}
+      TARGET_BRANCH: ${{ inputs.target_branch || 'v6' }}
       DIST_ARCHIVE: runs-on-cache-${{ inputs.tag }}.tar.gz
     steps:
       - name: Validate inputs

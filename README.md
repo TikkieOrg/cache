@@ -1,6 +1,6 @@
 # Shockingly faster cache action
 
-This action is a drop-in replacement for the official `actions/cache@v5` action, for use with the [RunsOn](https://runs-on.com/?ref=cache) self-hosted GitHub Action runner provider, or with your own self-hosted runner solution.
+This action is a TikkieOrg-maintained build of public `runs-on/cache@v5`, published as `TikkieOrg/cache@v6`. It is a drop-in replacement for `actions/cache@v5` on RunsOn or other self-hosted runners.
 
 ![image](https://github.com/runs-on/cache/assets/6114/e61c5b6f-aa86-48be-9e1b-baac6dce9b84)
 
@@ -15,15 +15,15 @@ If no S3 bucket is provided, it will also transparently switch to the default be
 >* [Restore action](./restore/README.md)
 >* [Save action](./save/README.md)
 
-[![Tests](https://github.com/runs-on/cache/actions/workflows/tests.yml/badge.svg)](https://github.com/runs-on/cache/actions/workflows/tests.yml)
+[![Tests](https://github.com/TikkieOrg/cache/actions/workflows/tests.yml/badge.svg?branch=v6)](https://github.com/TikkieOrg/cache/actions/workflows/tests.yml?query=branch%3Av6)
 
 ## Usage with RunsOn
 
-If using [RunsOn](https://runs-on.com), simply replace `actions/cache@v5` with `runs-on/cache@v5`. All the official options are supported.
+If using [RunsOn](https://runs-on.com), replace `actions/cache@v5` with `TikkieOrg/cache@v6`. All official options and the TikkieOrg extension below are supported.
 
 ```diff
 - - uses: actions/cache@v5
-+ - uses: runs-on/cache@v5
++ - uses: TikkieOrg/cache@v6
     with:
       ...
 ```
@@ -37,7 +37,7 @@ If you want to use this in your own infrastructure, setup your AWS credentials w
 ```yaml
   - uses: aws-actions/configure-aws-credentials@v4
     ...
-  - uses: runs-on/cache@v5
+  - uses: TikkieOrg/cache@v6
     with:
       ...
     env:
@@ -59,7 +59,7 @@ This fork retains the `compression-level` input for S3-backed caches. Use `0` fo
 
 ## Action pinning
 
-Contrary to the upstream action, `v5` is a branch that tracks the latest upstream v5 release with RunsOn patches applied. You can also pin to a specific commit.
+`v6` is the consumer branch and tracks public `runs-on/cache@v5` with TikkieOrg changes applied. Consumers can use `TikkieOrg/cache@v6` or pin a specific commit.
 
 ## What's New
 
