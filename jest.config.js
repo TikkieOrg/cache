@@ -20,4 +20,5 @@ process.stdout.write = (str, encoding, cb) => {
     if (!String(str).match(/^::/)) {
         return processStdoutWrite(str, encoding, cb);
     }
+    return true;
 };
