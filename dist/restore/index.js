@@ -74313,7 +74313,7 @@ exports.DownloadProgress = DownloadProgress;
 function downloadCacheHttpClientConcurrent(archiveLocation, archivePath, options) {
     return __awaiter(this, void 0, void 0, function* () {
         var _a;
-        const archiveDescriptor = yield fs.promises.open(archivePath, "w");
+        const archiveDescriptor = yield fs.promises.open(archivePath, "wx", 0o600);
         const httpClient = new http_client_1.HttpClient("actions/cache", undefined, {
             socketTimeout: options.timeoutInMs,
             keepAlive: true

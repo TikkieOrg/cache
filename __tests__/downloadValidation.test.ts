@@ -70,6 +70,11 @@ describe("Download Validation", () => {
             ).rejects.toThrow(
                 "Download validation failed: Expected 1024 bytes but downloaded 512 bytes"
             );
+            expect(fs.promises.open).toHaveBeenCalledWith(
+                testArchivePath,
+                "wx",
+                0o600
+            );
         });
 
         it("should succeed when downloaded size matches expected", async () => {
