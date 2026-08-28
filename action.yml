@@ -35,7 +35,7 @@ inputs:
       A separate `actions/cache/restore` step should be used instead.
       See https://github.com/actions/cache/tree/main/save#always-save-cache for more details.
   compression-level:
-    description: 'zstd compression level. 0 (default) = zstd default (level 3). Positive values (1–22) = higher quality, smaller archive, slower to compress. Negative values = --fast mode, larger archive, faster to compress.'
+    description: 'zstd compression level for S3 caches. 0 uses the zstd default (level 3), 1-22 trades compression speed for smaller archives, and negative values enable faster compression with larger archives.'
     default: '0'
     required: false
 outputs:

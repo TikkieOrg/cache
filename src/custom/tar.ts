@@ -1,10 +1,8 @@
-import { CompressionMethod } from "@actions/cache/lib/internal/constants";
 import { exec } from "@actions/exec";
 import * as io from "@actions/io";
-import { writeFileSync } from "fs";
 import * as path from "path";
+import { CompressionMethod } from "@actions/cache/lib/internal/constants";
 
-const ManifestFilename = "manifest.txt";
 const CacheFilenameZstd = "cache.tzst";
 const CacheFilenameGzip = "cache.tgz";
 
@@ -31,10 +29,8 @@ function buildDecompressProgram(
     }
 }
 
-// compressionLevel:
-//   0         → zstd default (level 3)
-//   1–22      → zstd quality level N (higher = smaller archive, slower to compress)
-//   negative  → zstd --fast=|N| (faster compress, larger archive)
+// 0 uses zstd's default, positive values select a quality level, and negative
+// values select the corresponding --fast level.
 function buildLevelFlag(compressionLevel: number): string {
     if (compressionLevel > 0) return ` -${compressionLevel}`;
     if (compressionLevel < 0) return ` --fast=${-compressionLevel}`;
@@ -84,9 +80,6 @@ export async function createTar(
     compressionMethod: CompressionMethod,
     compressionLevel = 0
 ): Promise<void> {
-    const manifestPath = path.join(archiveFolder, ManifestFilename);
-    writeFileSync(manifestPath, sourceDirectories.join("\n"));
-
     const workingDirectory = getWorkingDirectory();
     const tarPath = await io.which("tar", true);
     const cacheFileName = getCacheFileName(compressionMethod);
@@ -100,16 +93,22 @@ export async function createTar(
 
     if (compressProgram === null) {
         await exec(
-            `"${tarPath}" --posix -czf "${archivePath}" -P -C "${workingDirectory}" --files-from "${manifestPath}"`,
+            `"${tarPath}" --posix -czf "${archivePath}" -P -C "${workingDirectory}" --files-from -`,
             undefined,
-            { cwd: archiveFolder }
+            {
+                cwd: archiveFolder,
+                input: Buffer.from(sourceDirectories.join("\n"))
+            }
         );
         return;
     }
 
     await exec(
-        `"${tarPath}" --posix -cf "${archivePath}" -P -C "${workingDirectory}" --files-from "${manifestPath}" --use-compress-program "${compressProgram}"`,
+        `"${tarPath}" --posix -cf "${archivePath}" -P -C "${workingDirectory}" --files-from - --use-compress-program "${compressProgram}"`,
         undefined,
-        { cwd: archiveFolder }
+        {
+            cwd: archiveFolder,
+            input: Buffer.from(sourceDirectories.join("\n"))
+        }
     );
 }
