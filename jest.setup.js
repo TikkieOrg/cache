@@ -1,0 +1,3 @@
+afterEach(() => {
+    process.exitCode = undefined;
+});
