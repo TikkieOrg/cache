@@ -38,7 +38,7 @@ jobs:
     - name: Verify distributed artifacts
       run: |
         npm run build
-        git diff --exit-code -- dist
+        test -z "$(git status --porcelain -- dist)"
 
   # End to end save and restore
   test-save:
